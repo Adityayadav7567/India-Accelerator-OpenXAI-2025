@@ -15,6 +15,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [sparkles, setSparkles] = useState<{ x: number; y: number }[]>([]);
 
   // Track mouse movement for interactive background
   useEffect(() => {
@@ -23,6 +24,15 @@ export default function Home() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  // Generate sparkles only on client
+  useEffect(() => {
+    const s = Array.from({ length: 30 }).map(() => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+    }));
+    setSparkles(s);
   }, []);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,19 +91,12 @@ export default function Home() {
 
       {/* Floating sparkles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 30 }).map((_, i) => (
+        {sparkles.map((pos, i) => (
           <motion.div
             key={i}
             className="absolute w-1.5 h-1.5 bg-pink-400 rounded-full shadow"
-            initial={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
-              opacity: 0,
-            }}
-            animate={{
-              y: ["0%", "-100%"],
-              opacity: [0, 1, 0],
-            }}
+            initial={{ x: pos.x, y: pos.y, opacity: 0 }}
+            animate={{ y: [pos.y, pos.y - 200], opacity: [0, 1, 0] }}
             transition={{
               duration: 5 + Math.random() * 5,
               repeat: Infinity,
@@ -208,4 +211,3 @@ export default function Home() {
     </main>
   );
 }
-
